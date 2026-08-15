@@ -6,26 +6,17 @@ Application personnelle, indépendante de tout autre projet du compte, pour :
 2. calculer automatiquement l'ordre de passage le plus rapide ;
 3. ouvrir cet itinéraire, dans le bon ordre, directement dans Google Maps.
 
-100% JavaScript : frontend React (Vite), backend Node/Express. **Installable en PWA** (icône sur l'écran d'accueil, se lance en plein écran comme une app native).
-
-## Installer l'app (PWA)
-
-Une fois l'app ouverte dans le navigateur (en local sur `localhost`, ou sur l'URL Render une fois déployée — HTTPS requis en dehors de `localhost`) :
-
-- **Android / Chrome desktop** : bouton "Installer" dans la barre d'adresse, ou menu ⋮ → *Installer Ouvaton*.
-- **iPhone / iPad (Safari)** : bouton Partager → *Sur l'écran d'accueil*.
-
-L'app s'ouvre alors comme une app native (sans barre d'adresse), avec son icône. L'interface (HTML/CSS/JS) est mise en cache par un service worker et se recharge instantanément, même hors-ligne ; le géocodage et le calcul d'itinéraire restent des appels réseau (Nominatim/OSRM) donc nécessitent une connexion.
+100% JavaScript, 100% statique : une seule app React (Vite), sans backend — le navigateur appelle directement les services publics de géocodage et de calcul d'itinéraire. **Installable en PWA** (icône sur l'écran d'accueil, se lance en plein écran comme une app native).
 
 ## Pourquoi c'est gratuit
 
-Aucune clé API n'est nécessaire :
+Aucune clé API n'est nécessaire, aucun serveur à faire tourner ou à payer :
 
-- **Géocodage** (adresse texte → coordonnées) : [Nominatim](https://nominatim.org/) (OpenStreetMap), via une petite file d'attente côté serveur qui respecte sa limite d'1 requête/seconde.
-- **Calcul de l'itinéraire optimal** : le service public [OSRM](http://project-osrm.org/) (`router.project-osrm.org`), endpoint `trip`, qui résout le problème du voyageur de commerce (ordre optimal des arrêts).
+- **Géocodage** (adresse texte → coordonnées) : [Nominatim](https://nominatim.org/) (OpenStreetMap), appelé directement depuis le navigateur, avec une file d'attente côté client qui respecte sa limite d'1 requête/seconde.
+- **Calcul de l'itinéraire optimal** : le service public [OSRM](http://project-osrm.org/) (`router.project-osrm.org`), endpoint `trip`, qui résout le problème du voyageur de commerce (ordre optimal des arrêts) — appelé lui aussi directement depuis le navigateur.
 - **Ouverture finale** : un simple lien `https://www.google.com/maps/dir/?api=1&...` — aucune clé Google requise.
 
-Ces services publics sont prévus pour un usage léger et personnel (quelques calculs par mois) ; pas pour un usage intensif ou commercial. Si un jour le volume augmente, il faudra héberger sa propre instance OSRM/Nominatim ou passer à un service payant.
+Ces services publics sont prévus pour un usage léger et personnel (quelques calculs par mois) ; pas pour un usage intensif ou commercial.
 
 ## Installation
 
@@ -33,46 +24,35 @@ Ces services publics sont prévus pour un usage léger et personnel (quelques ca
 npm install
 ```
 
-(installe le client et le serveur via les npm workspaces)
-
 ## Lancer en développement
 
 ```bash
 npm run dev
 ```
 
-- Frontend sur http://localhost:5173 (proxy `/api` vers le serveur)
-- Backend sur http://localhost:3001
+Frontend sur http://localhost:5173.
 
 ## Build de production
 
 ```bash
 npm run build
-npm start
+npm run preview   # pour tester le build localement
 ```
 
-Le serveur Express sert alors l'app buildée et l'API sur un seul port (3001 par défaut, configurable via `PORT`).
+Le résultat (`client/dist/`) est un dossier 100% statique : n'importe quel hébergeur de fichiers statiques suffit (GitHub Pages, Netlify, Cloudflare Pages...).
 
-## Déploiement sur Render (gratuit)
+## Déploiement sur GitHub Pages (gratuit)
 
-Le repo contient un blueprint Render (`render.yaml`) : un seul service web Node qui build le client et sert le tout (front + API) sur une seule URL, sur le plan gratuit.
+Un workflow GitHub Actions (`.github/workflows/deploy-pages.yml`) build et déploie automatiquement à chaque push sur `main`.
 
-**Étapes (à faire une fois, depuis ton compte Render) :**
+**Étape unique à faire une fois, dans les réglages du repo GitHub :**
 
-1. [render.com/deploy?repo=https://github.com/cavalcantilp/ouvaton](https://render.com/deploy?repo=https://github.com/cavalcantilp/ouvaton) — Render lit `render.yaml` et pré-remplit la config.
-2. Choisis la branche `claude/ouvaton-route-optimizer-v831p6` (ou `main` une fois la branche fusionnée).
-3. Clique sur **Apply** / **Create Web Service**.
+1. Sur `github.com/cavalcantilp/ouvaton` → **Settings** → **Pages**.
+2. Section **Build and deployment** → **Source** → choisir **GitHub Actions**.
 
-Render build (`npm install && npm run build`) puis lance (`npm start`) le serveur, qui écoute sur le port fourni par Render (`process.env.PORT`, déjà géré dans `server/src/index.js`). Une fois déployé, l'URL publique (`https://ouvaton-xxxx.onrender.com`) sert directement l'app — plus besoin de lancer quoi que ce soit en local.
+Une fois ce réglage fait, chaque push sur `main` republie automatiquement l'app sur `https://cavalcantilp.github.io/ouvaton/`. Tu peux aussi déclencher un déploiement manuellement depuis l'onglet **Actions** du repo (bouton *Run workflow* sur `Deploy to GitHub Pages`), y compris avant d'avoir mergé sur `main`.
 
-**À savoir sur le plan gratuit Render :**
-- Le service se met en veille après 15 min d'inactivité ; la requête suivante redémarre le service (quelques dizaines de secondes de délai). Sans impact pour un usage de quelques fois par mois.
-- Toujours 0€ : aucune clé API n'est utilisée (Nominatim, OSRM et le lien Google Maps restent gratuits et sans authentification).
-
-Si le blueprint n'est pas détecté automatiquement, configuration manuelle équivalente dans le dashboard Render :
-- **Build command** : `npm install && npm run build`
-- **Start command** : `npm start`
-- **Plan** : Free
+Toujours 0€ : GitHub Pages est gratuit pour un repo public, et l'app elle-même n'utilise aucune clé API.
 
 ## Utilisation
 
@@ -86,11 +66,20 @@ Si le blueprint n'est pas détecté automatiquement, configuration manuelle équ
 5. L'ordre optimisé, la distance et la durée s'affichent, avec le tracé sur une carte.
 6. Cliquez sur **Ouvrir dans Google Maps** : Google Maps s'ouvre avec les arrêts déjà dans le bon ordre.
 
+## Installer l'app (PWA)
+
+Une fois l'app ouverte dans le navigateur (en local sur `localhost`, ou sur l'URL GitHub Pages une fois déployée — HTTPS requis en dehors de `localhost`) :
+
+- **Android / Chrome desktop** : bouton "Installer" dans la barre d'adresse, ou menu ⋮ → *Installer Ouvaton*.
+- **iPhone / iPad (Safari)** : bouton Partager → *Sur l'écran d'accueil*.
+
+L'app s'ouvre alors comme une app native (sans barre d'adresse), avec son icône. L'interface (HTML/CSS/JS) est mise en cache par un service worker et se recharge instantanément, même hors-ligne ; le géocodage et le calcul d'itinéraire restent des appels réseau (Nominatim/OSRM) donc nécessitent une connexion.
+
 ## Structure
 
 ```
-client/   application React (Vite)
-server/   API Express (proxy Nominatim + OSRM)
+client/   application React (Vite) — front + appels directs Nominatim/OSRM
+.github/workflows/deploy-pages.yml   build + déploiement GitHub Pages
 ```
 
 ## Limites connues

@@ -2,7 +2,13 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
 
+// GitHub Pages serves this project at https://<user>.github.io/ouvaton/, so
+// every asset path needs that prefix there. Locally (`vite dev`/`preview`)
+// it stays at the root. The GitHub Actions workflow sets GITHUB_PAGES=true.
+const base = process.env.GITHUB_PAGES ? '/ouvaton/' : '/';
+
 export default defineConfig({
+  base,
   plugins: [
     react(),
     VitePWA({
@@ -13,21 +19,18 @@ export default defineConfig({
         short_name: 'Ouvaton',
         description: "Ajoutez vos adresses, calculez le meilleur itinéraire, ouvrez-le dans Google Maps.",
         lang: 'fr',
-        start_url: '/',
-        scope: '/',
+        start_url: base,
+        scope: base,
         display: 'standalone',
         theme_color: '#2563eb',
         background_color: '#f5f7fb',
         icons: [
-          { src: '/icons/icon-192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },
-          { src: '/icons/icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any' },
-          { src: '/icons/maskable-icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
+          { src: 'icons/icon-192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },
+          { src: 'icons/icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any' },
+          { src: 'icons/maskable-icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
         ],
       },
       workbox: {
-        // /api/* (geocode, optimize) is always live data — never precached or
-        // served from the service worker cache, only the app shell is.
-        navigateFallbackDenylist: [/^\/api\//],
         globPatterns: ['**/*.{js,css,html,svg,png,ico}'],
       },
       devOptions: {
@@ -37,11 +40,5 @@ export default defineConfig({
   ],
   server: {
     port: 5173,
-    proxy: {
-      '/api': {
-        target: 'http://localhost:3001',
-        changeOrigin: true,
-      },
-    },
   },
 });
