@@ -88,10 +88,19 @@ export async function optimizeRoute({ addresses, fixedStart, fixedEnd, roundTrip
   }));
   result.sort((a, b) => a.tripPosition - b.tripPosition);
 
+  // trip.legs[i] is the hop from order[i] to order[i+1] (already in
+  // optimized-order sequence — legs are returned in trip order, not input
+  // order). A roundtrip has one extra leg closing back to the start.
+  const legs = (trip.legs || []).map((leg) => ({
+    distanceMeters: leg.distance,
+    durationSeconds: leg.duration,
+  }));
+
   return {
     order: result.map((r) => r.address),
     distanceMeters: trip.distance,
     durationSeconds: trip.duration,
     geometry: trip.geometry,
+    legs,
   };
 }
