@@ -1,5 +1,5 @@
 import RouteMap from './RouteMap.jsx';
-import { buildGoogleMapsUrl } from '../googleMapsUrl.js';
+import { buildGoogleMapsUrls, MAX_STOPS_PER_LINK } from '../googleMapsUrl.js';
 
 function formatDistance(meters) {
   return `${(meters / 1000).toFixed(1)} km`;
@@ -12,11 +12,11 @@ function formatDuration(seconds) {
   return `${h} h ${String(m).padStart(2, '0')}`;
 }
 
-export default function ResultPanel({ result }) {
+export default function ResultPanel({ result, roundTrip }) {
   if (!result) return null;
 
   const { order, distanceMeters, durationSeconds, geometry } = result;
-  const mapsUrl = buildGoogleMapsUrl(order);
+  const mapsSegments = buildGoogleMapsUrls(order, { roundTrip });
 
   return (
     <div className="result-panel">
@@ -36,16 +36,33 @@ export default function ResultPanel({ result }) {
         ))}
       </ol>
 
-      {mapsUrl && (
-        <a className="maps-button" href={mapsUrl} target="_blank" rel="noopener noreferrer">
+      {mapsSegments.length === 1 && (
+        <a className="maps-button" href={mapsSegments[0].url} target="_blank" rel="noopener noreferrer">
           Ouvrir dans Google Maps
         </a>
       )}
-      {order.length > 10 && (
-        <p className="hint">
-          Google Maps limite le nombre d'étapes affichables ; avec {order.length} adresses, vérifiez que tous les
-          arrêts s'affichent bien une fois ouvert.
-        </p>
+
+      {mapsSegments.length > 1 && (
+        <>
+          <p className="hint">
+            Google Maps limite ses liens à {MAX_STOPS_PER_LINK} arrêts : l'itinéraire est scindé en{' '}
+            {mapsSegments.length} parties à ouvrir l'une après l'autre (chacune reprend là où la précédente
+            s'arrête).
+          </p>
+          <div className="maps-segments">
+            {mapsSegments.map((segment, index) => (
+              <a
+                key={segment.url}
+                className="maps-button"
+                href={segment.url}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Partie {index + 1} sur {mapsSegments.length} ({segment.stops.length} arrêts)
+              </a>
+            ))}
+          </div>
+        </>
       )}
     </div>
   );

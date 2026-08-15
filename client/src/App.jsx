@@ -69,7 +69,7 @@ export default function App() {
         </section>
 
         <section className="panel">
-          <ResultPanel result={result} />
+          <ResultPanel result={result} roundTrip={options.roundTrip} />
         </section>
       </main>
 
