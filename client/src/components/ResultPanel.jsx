@@ -1,5 +1,7 @@
+import { useState } from 'react';
 import RouteMap from './RouteMap.jsx';
 import { buildGoogleMapsUrls, MAX_STOPS_PER_LINK } from '../googleMapsUrl.js';
+import { downloadItineraryPdf } from '../pdfReport.js';
 
 function formatDistance(meters) {
   return `${(meters / 1000).toFixed(1)} km`;
@@ -13,10 +15,23 @@ function formatDuration(seconds) {
 }
 
 export default function ResultPanel({ result, roundTrip }) {
+  const [pdfState, setPdfState] = useState('idle'); // idle | loading | error
+
   if (!result) return null;
 
-  const { order, distanceMeters, durationSeconds, geometry } = result;
+  const { order, distanceMeters, durationSeconds, geometry, legs } = result;
   const mapsSegments = buildGoogleMapsUrls(order, { roundTrip });
+
+  async function handleDownloadPdf() {
+    setPdfState('loading');
+    try {
+      await downloadItineraryPdf({ order, legs, distanceMeters, durationSeconds });
+      setPdfState('idle');
+    } catch (err) {
+      console.error('Échec de la génération du PDF:', err);
+      setPdfState('error');
+    }
+  }
 
   return (
     <div className="result-panel">
@@ -26,6 +41,15 @@ export default function ResultPanel({ result, roundTrip }) {
       </p>
 
       <RouteMap addresses={order} geometry={geometry} />
+
+      {legs && legs.length > 0 && (
+        <>
+          <button type="button" className="secondary" disabled={pdfState === 'loading'} onClick={handleDownloadPdf}>
+            {pdfState === 'loading' ? 'Génération du PDF…' : 'Télécharger le PDF (distances entre chaque étape)'}
+          </button>
+          {pdfState === 'error' && <p className="error">La génération du PDF a échoué.</p>}
+        </>
+      )}
 
       <ol className="address-list result-order">
         {order.map((addr, index) => (

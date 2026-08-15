@@ -65,6 +65,7 @@ Toujours 0€ : GitHub Pages est gratuit pour un repo public, et l'app elle-mêm
 4. Cliquez sur **Calculer le meilleur itinéraire**.
 5. L'ordre optimisé, la distance et la durée s'affichent, avec le tracé sur une carte.
 6. Cliquez sur **Ouvrir dans Google Maps** : Google Maps s'ouvre avec les arrêts déjà dans le bon ordre.
+7. Cliquez sur **Télécharger le PDF** pour obtenir un tableau récapitulatif (distance et durée entre chaque étape consécutive, généré entièrement dans le navigateur, aucun envoi de données).
 
 ## Installer l'app (PWA)
 
