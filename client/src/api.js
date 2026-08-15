@@ -30,6 +30,7 @@ export function searchAddress(query) {
     url.searchParams.set('format', 'jsonv2');
     url.searchParams.set('addressdetails', '0');
     url.searchParams.set('limit', '5');
+    url.searchParams.set('countrycodes', 'fr');
 
     const res = await fetch(url, { headers: { 'Accept-Language': 'fr' } });
     if (!res.ok) {
@@ -55,7 +56,9 @@ export async function optimizeRoute({ addresses, fixedStart, fixedEnd, roundTrip
 
   const coordinates = addresses.map((a) => `${a.lon},${a.lat}`).join(';');
   const source = fixedStart ? 'first' : 'any';
-  const destination = roundTrip ? source : fixedEnd ? 'last' : 'any';
+  // OSRM only accepts 'any' or 'last' for destination — a roundtrip already
+  // closes the loop back to the source, so 'any' is correct there too.
+  const destination = !roundTrip && fixedEnd ? 'last' : 'any';
 
   const url = new URL(`${OSRM_BASE_URL}/trip/v1/${profile}/${coordinates}`);
   url.searchParams.set('roundtrip', String(roundTrip));
