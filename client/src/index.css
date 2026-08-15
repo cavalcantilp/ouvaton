@@ -259,6 +259,18 @@ button.primary:disabled {
   background: #2c8f45;
 }
 
+.maps-segments {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.maps-segments .maps-button {
+  margin-top: 0;
+  text-align: center;
+}
+
 footer {
   margin-top: 32px;
   color: var(--muted);

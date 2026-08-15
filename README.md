@@ -85,4 +85,5 @@ client/   application React (Vite) — front + appels directs Nominatim/OSRM
 ## Limites connues
 
 - Le serveur OSRM public démo n'est pas garanti disponible/rapide en continu (usage léger recommandé).
-- Google Maps affiche fiablement jusqu'à une dizaine d'étapes intermédiaires via ce type de lien ; au-delà, vérifiez l'affichage après ouverture.
+- Les liens Google Maps sont limités à 10 arrêts (origine + destination + 8 étapes). Au-delà, l'app scinde automatiquement l'itinéraire en plusieurs liens à ouvrir l'un après l'autre, chacun repartant du dernier arrêt du précédent.
+- La recherche d'adresses est limitée à la France (`countrycodes=fr` sur Nominatim).
