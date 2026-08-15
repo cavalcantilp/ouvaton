@@ -6,7 +6,16 @@ Application personnelle, indépendante de tout autre projet du compte, pour :
 2. calculer automatiquement l'ordre de passage le plus rapide ;
 3. ouvrir cet itinéraire, dans le bon ordre, directement dans Google Maps.
 
-100% JavaScript : frontend React (Vite), backend Node/Express.
+100% JavaScript : frontend React (Vite), backend Node/Express. **Installable en PWA** (icône sur l'écran d'accueil, se lance en plein écran comme une app native).
+
+## Installer l'app (PWA)
+
+Une fois l'app ouverte dans le navigateur (en local sur `localhost`, ou sur l'URL Render une fois déployée — HTTPS requis en dehors de `localhost`) :
+
+- **Android / Chrome desktop** : bouton "Installer" dans la barre d'adresse, ou menu ⋮ → *Installer Ouvaton*.
+- **iPhone / iPad (Safari)** : bouton Partager → *Sur l'écran d'accueil*.
+
+L'app s'ouvre alors comme une app native (sans barre d'adresse), avec son icône. L'interface (HTML/CSS/JS) est mise en cache par un service worker et se recharge instantanément, même hors-ligne ; le géocodage et le calcul d'itinéraire restent des appels réseau (Nominatim/OSRM) donc nécessitent une connexion.
 
 ## Pourquoi c'est gratuit
 
