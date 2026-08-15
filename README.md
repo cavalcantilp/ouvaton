@@ -44,6 +44,27 @@ npm start
 
 Le serveur Express sert alors l'app buildée et l'API sur un seul port (3001 par défaut, configurable via `PORT`).
 
+## Déploiement sur Render (gratuit)
+
+Le repo contient un blueprint Render (`render.yaml`) : un seul service web Node qui build le client et sert le tout (front + API) sur une seule URL, sur le plan gratuit.
+
+**Étapes (à faire une fois, depuis ton compte Render) :**
+
+1. [render.com/deploy?repo=https://github.com/cavalcantilp/ouvaton](https://render.com/deploy?repo=https://github.com/cavalcantilp/ouvaton) — Render lit `render.yaml` et pré-remplit la config.
+2. Choisis la branche `claude/ouvaton-route-optimizer-v831p6` (ou `main` une fois la branche fusionnée).
+3. Clique sur **Apply** / **Create Web Service**.
+
+Render build (`npm install && npm run build`) puis lance (`npm start`) le serveur, qui écoute sur le port fourni par Render (`process.env.PORT`, déjà géré dans `server/src/index.js`). Une fois déployé, l'URL publique (`https://ouvaton-xxxx.onrender.com`) sert directement l'app — plus besoin de lancer quoi que ce soit en local.
+
+**À savoir sur le plan gratuit Render :**
+- Le service se met en veille après 15 min d'inactivité ; la requête suivante redémarre le service (quelques dizaines de secondes de délai). Sans impact pour un usage de quelques fois par mois.
+- Toujours 0€ : aucune clé API n'est utilisée (Nominatim, OSRM et le lien Google Maps restent gratuits et sans authentification).
+
+Si le blueprint n'est pas détecté automatiquement, configuration manuelle équivalente dans le dashboard Render :
+- **Build command** : `npm install && npm run build`
+- **Start command** : `npm start`
+- **Plan** : Free
+
 ## Utilisation
 
 1. Tapez une adresse (≥ 3 caractères) puis cliquez sur une suggestion pour l'ajouter à la liste.
