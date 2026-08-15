@@ -4,6 +4,16 @@ import AddressList from './components/AddressList.jsx';
 import RouteOptions from './components/RouteOptions.jsx';
 import ResultPanel from './components/ResultPanel.jsx';
 import { optimizeRoute } from './api.js';
+import { TOP_20_FRENCH_CITIES } from './testCities.js';
+
+function shuffled(items) {
+  const copy = [...items];
+  for (let i = copy.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [copy[i], copy[j]] = [copy[j], copy[i]];
+  }
+  return copy;
+}
 
 export default function App() {
   const [addresses, setAddresses] = useState([]);
@@ -29,6 +39,11 @@ export default function App() {
       next.splice(to, 0, item);
       return next;
     });
+    setResult(null);
+  }
+
+  function loadTestRoute() {
+    setAddresses(shuffled(TOP_20_FRENCH_CITIES));
     setResult(null);
   }
 
@@ -58,6 +73,9 @@ export default function App() {
       <main>
         <section className="panel">
           <AddressInput onAdd={addAddress} />
+          <button type="button" className="secondary" onClick={loadTestRoute}>
+            Itinéraire test (20 plus grandes villes de France)
+          </button>
           <AddressList addresses={addresses} onRemove={removeAddress} onMove={moveAddress} />
           <RouteOptions options={options} onChange={setOptions} />
 

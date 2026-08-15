@@ -204,6 +204,23 @@ button.primary:disabled {
   cursor: not-allowed;
 }
 
+button.secondary {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 16px;
+  background: var(--panel);
+  color: var(--accent-dark);
+  border: 1px solid var(--accent);
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+button.secondary:hover {
+  background: var(--bg);
+}
+
 .hint {
   color: var(--muted);
   font-size: 0.85rem;
