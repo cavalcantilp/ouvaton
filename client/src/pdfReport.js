@@ -74,6 +74,24 @@ function drawSchematicMap(doc, order, { closeLoop, x, y, width, height }) {
   doc.text('Carte schématique : positions à l’échelle, non géoréférencée (pas de fond de carte).', x, y + height + 5);
 }
 
+// Embeds the real tile-based map image, scaled to fit the box without
+// distorting it, and adds the attribution CARTO's basemap tiles require.
+function drawTileMap(doc, map, { x, y, width, height }) {
+  const scale = Math.min(width / map.width, height / map.height);
+  const drawWidth = map.width * scale;
+  const drawHeight = map.height * scale;
+  const offsetX = x + (width - drawWidth) / 2;
+  const offsetY = y + (height - drawHeight) / 2;
+
+  doc.addImage(map.dataUrl, 'PNG', offsetX, offsetY, drawWidth, drawHeight);
+  doc.setDrawColor(225);
+  doc.rect(offsetX, offsetY, drawWidth, drawHeight);
+
+  doc.setTextColor(130);
+  doc.setFontSize(8);
+  doc.text('Fond de carte © OpenStreetMap contributors, © CARTO', x, y + height + 5);
+}
+
 // Builds a PDF with a schematic route map, the list of stops and the
 // distance/duration to the next one, then triggers a browser download.
 // `legs[i]` is the hop from `order[i]` to `order[i + 1]` (or, for a
@@ -85,7 +103,11 @@ function drawSchematicMap(doc, order, { closeLoop, x, y, width, height }) {
 // would roughly triple the app's initial JS payload for a button most
 // sessions won't even click.
 export async function downloadItineraryPdf({ order, legs, distanceMeters, durationSeconds }) {
-  const [{ jsPDF }, { default: autoTable }] = await Promise.all([import('jspdf'), import('jspdf-autotable')]);
+  const [{ jsPDF }, { default: autoTable }, { renderRouteMapCanvas }] = await Promise.all([
+    import('jspdf'),
+    import('jspdf-autotable'),
+    import('./staticMap.js'),
+  ]);
   const doc = new jsPDF();
   const pageWidth = doc.internal.pageSize.getWidth();
 
@@ -103,13 +125,19 @@ export async function downloadItineraryPdf({ order, legs, distanceMeters, durati
   doc.text(`Distance totale : ${formatKm(distanceMeters)} · Durée totale : ${formatDuration(durationSeconds)}`, 14, 34);
 
   if (order.length >= 2) {
-    drawSchematicMap(doc, order, {
-      closeLoop: legs.length === order.length,
-      x: 14,
-      y: 42,
-      width: pageWidth - 28,
-      height: 190,
-    });
+    const closeLoop = legs.length === order.length;
+    const mapBox = { x: 14, y: 42, width: pageWidth - 28, height: 190 };
+    let tileMap = null;
+    try {
+      tileMap = await renderRouteMapCanvas(order, { closeLoop });
+    } catch (err) {
+      console.error('Fond de carte indisponible, repli sur le schéma:', err);
+    }
+    if (tileMap) {
+      drawTileMap(doc, tileMap, mapBox);
+    } else {
+      drawSchematicMap(doc, order, { closeLoop, ...mapBox });
+    }
   }
 
   doc.addPage();
