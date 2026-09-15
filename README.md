@@ -12,7 +12,7 @@ Application personnelle, indépendante de tout autre projet du compte, pour :
 
 Aucune clé API n'est nécessaire, aucun serveur à faire tourner ou à payer :
 
-- **Géocodage** (adresse texte → coordonnées) : [Nominatim](https://nominatim.org/) (OpenStreetMap), appelé directement depuis le navigateur, avec une file d'attente côté client qui respecte sa limite d'1 requête/seconde.
+- **Géocodage** (adresse texte → coordonnées) : la [Base Adresse Nationale](https://adresse.data.gouv.fr/) (API officielle du gouvernement français, `api-adresse.data.gouv.fr`), appelée directement depuis le navigateur — nettement plus précise et complète que des géocodeurs génériques sur les adresses françaises, et gratuite sans clé API.
 - **Calcul de l'itinéraire optimal** : le service public [OSRM](http://project-osrm.org/) (`router.project-osrm.org`), endpoint `trip`, qui résout le problème du voyageur de commerce (ordre optimal des arrêts) — appelé lui aussi directement depuis le navigateur.
 - **Ouverture finale** : un simple lien `https://www.google.com/maps/dir/?api=1&...` — aucune clé Google requise.
 
@@ -74,12 +74,12 @@ Une fois l'app ouverte dans le navigateur (en local sur `localhost`, ou sur l'UR
 - **Android / Chrome desktop** : bouton "Installer" dans la barre d'adresse, ou menu ⋮ → *Installer Ouvaton*.
 - **iPhone / iPad (Safari)** : bouton Partager → *Sur l'écran d'accueil*.
 
-L'app s'ouvre alors comme une app native (sans barre d'adresse), avec son icône. L'interface (HTML/CSS/JS) est mise en cache par un service worker et se recharge instantanément, même hors-ligne ; le géocodage et le calcul d'itinéraire restent des appels réseau (Nominatim/OSRM) donc nécessitent une connexion.
+L'app s'ouvre alors comme une app native (sans barre d'adresse), avec son icône. L'interface (HTML/CSS/JS) est mise en cache par un service worker et se recharge instantanément, même hors-ligne ; le géocodage et le calcul d'itinéraire restent des appels réseau (BAN/OSRM) donc nécessitent une connexion.
 
 ## Structure
 
 ```
-client/   application React (Vite) — front + appels directs Nominatim/OSRM
+client/   application React (Vite) — front + appels directs BAN/OSRM
 .github/workflows/deploy-pages.yml   build + déploiement GitHub Pages
 ```
 
@@ -87,4 +87,4 @@ client/   application React (Vite) — front + appels directs Nominatim/OSRM
 
 - Le serveur OSRM public démo n'est pas garanti disponible/rapide en continu (usage léger recommandé).
 - Les liens Google Maps sont limités à 10 arrêts (origine + destination + 8 étapes). Au-delà, l'app scinde automatiquement l'itinéraire en plusieurs liens à ouvrir l'un après l'autre, chacun repartant du dernier arrêt du précédent.
-- La recherche d'adresses est limitée à la France (`countrycodes=fr` sur Nominatim).
+- La recherche d'adresses (Base Adresse Nationale) ne couvre que la France.

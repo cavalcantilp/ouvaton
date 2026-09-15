@@ -93,7 +93,7 @@ export default function App() {
 
       <footer>
         <p>
-          Géocodage : OpenStreetMap Nominatim · Calcul d'itinéraire : OSRM (démo publique) · Ouverture finale : Google
+          Géocodage : Base Adresse Nationale · Calcul d'itinéraire : OSRM (démo publique) · Ouverture finale : Google
           Maps. Usage personnel, sans clé API, sans frais.
         </p>
       </footer>
