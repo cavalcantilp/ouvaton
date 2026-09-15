@@ -1,49 +1,28 @@
-const NOMINATIM_URL = 'https://nominatim.openstreetmap.org/search';
+const BAN_URL = 'https://api-adresse.data.gouv.fr/search/';
 const OSRM_BASE_URL = 'https://router.project-osrm.org';
 
-// Nominatim's usage policy caps anonymous usage at ~1 request/second. This
-// tiny queue serialises our outgoing requests so a burst of address lookups
-// never breaks that rule (there's no backend anymore to do this for us).
-const MIN_INTERVAL_MS = 1100;
-let queue = Promise.resolve();
-let lastCallAt = 0;
+// Base Adresse Nationale: France's official, free, no-key geocoder — built
+// specifically from French cadastral/postal data, so it's both far more
+// complete on French addresses than a global geocoder like Nominatim and
+// inherently France-only (no country filter needed). It's designed for
+// live autocomplete traffic, so unlike Nominatim it doesn't need
+// client-side request throttling.
+export async function searchAddress(query) {
+  const url = new URL(BAN_URL);
+  url.searchParams.set('q', query);
+  url.searchParams.set('limit', '5');
 
-function throttled(task) {
-  const run = async () => {
-    const wait = Math.max(0, lastCallAt + MIN_INTERVAL_MS - Date.now());
-    if (wait > 0) await new Promise((resolve) => setTimeout(resolve, wait));
-    lastCallAt = Date.now();
-    return task();
-  };
-  const result = queue.then(run, run);
-  queue = result.then(
-    () => undefined,
-    () => undefined
-  );
-  return result;
-}
-
-export function searchAddress(query) {
-  return throttled(async () => {
-    const url = new URL(NOMINATIM_URL);
-    url.searchParams.set('q', query);
-    url.searchParams.set('format', 'jsonv2');
-    url.searchParams.set('addressdetails', '0');
-    url.searchParams.set('limit', '5');
-    url.searchParams.set('countrycodes', 'fr');
-
-    const res = await fetch(url, { headers: { 'Accept-Language': 'fr' } });
-    if (!res.ok) {
-      throw new Error('La recherche a échoué.');
-    }
-    const data = await res.json();
-    return data.map((item) => ({
-      id: item.place_id,
-      label: item.display_name,
-      lat: parseFloat(item.lat),
-      lon: parseFloat(item.lon),
-    }));
-  });
+  const res = await fetch(url);
+  if (!res.ok) {
+    throw new Error('La recherche a échoué.');
+  }
+  const data = await res.json();
+  return data.features.map((feature) => ({
+    id: feature.properties.id || `${feature.geometry.coordinates[1]},${feature.geometry.coordinates[0]}`,
+    label: feature.properties.label,
+    lat: feature.geometry.coordinates[1],
+    lon: feature.geometry.coordinates[0],
+  }));
 }
 
 export async function optimizeRoute({ addresses, fixedStart, fixedEnd, roundTrip, profile = 'driving' }) {

@@ -1,5 +1,5 @@
 // 20 plus grandes villes de France (par population), coordonnées connues à
-// l'avance pour tester l'app sans passer par la recherche Nominatim.
+// l'avance pour tester l'app sans passer par la recherche d'adresse.
 export const TOP_20_FRENCH_CITIES = [
   { label: 'Paris', lat: 48.8566, lon: 2.3522 },
   { label: 'Marseille', lat: 43.2965, lon: 5.3698 },
